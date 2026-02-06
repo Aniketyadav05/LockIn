@@ -1,0 +1,48 @@
+/* Import Tailwind v4 */
+@import "tailwindcss";
+
+/* ✨ THEME CONFIGURATION 
+  In v4, we define theme variables right here in CSS! 
+*/
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-display: "Poppins", sans-serif;
+
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.5);
+  --shadow-neon: 0 0 10px rgba(167, 139, 250, 0.7), 0 0 20px rgba(167, 139, 250, 0.5);
+  
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-slow: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Base Styles */
+body {
+  background-color: #0f0c29;
+  color: white;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  selection-background-color: #ec4899; /* Pink-500 */
+  selection-color: white;
+}
+
+/* Custom Animation Keyframes */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
