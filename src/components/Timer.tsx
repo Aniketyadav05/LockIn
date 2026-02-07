@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { 
-  Play, Pause, RotateCcw, CheckCircle2, Pencil, Check, Tag, Save, X,
+  Play, Pause, RotateCcw, Pencil, Check, Save, X,
   Briefcase, BookOpen, Code2, Dumbbell, Coffee, PenTool, BrainCircuit 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,7 +23,7 @@ const PRESET_TAGS = [
 ];
 
 // 🧱 CUSTOM SVG: Focus Progress Ring
-const FocusRing = ({ progress, isActive, isComplete, colorHex }: { progress: number, isActive: boolean, isComplete: boolean, colorHex: string }) => {
+const FocusRing = ({ progress, isComplete, colorHex }: { progress: number, isComplete: boolean, colorHex: string }) => {
   const radius = 120;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
@@ -117,7 +117,10 @@ export default function Timer({
   const handleEarlyFinish = () => {
     const secondsSpent = totalTime - timeLeft;
     const minutesSpent = Math.max(1, Math.round(secondsSpent / 60));
-    if (secondsSpent < 10) { alert("Session too short to log!"); return; } // Minimal threshold
+    if (secondsSpent < 10) { 
+      alert("Session too short to log!"); 
+      return; 
+    }
     handleFinish(minutesSpent);
     setTimeLeft(totalTime);
   };
@@ -137,7 +140,7 @@ export default function Timer({
   const selectTag = (tag: typeof PRESET_TAGS[0]) => {
     setSelectedTag(tag);
     setSessionName(tag.label);
-    setIsTagMenuOpen(false); // Close menu after select
+    setIsTagMenuOpen(false); 
   };
 
   const formatTime = (seconds: number) => {
@@ -164,12 +167,12 @@ export default function Timer({
       
       {/* 🟣 PROGRESS CIRCLE */}
       <div className="relative w-80 h-80 flex items-center justify-center mb-10">
-        <FocusRing progress={progress} isActive={isActive} isComplete={timeLeft === 0} colorHex={getStrokeColor()} />
+        <FocusRing progress={progress} isComplete={timeLeft === 0} colorHex={getStrokeColor()} />
 
         {/* ⏱️ CENTER DISPLAY */}
         <div className="text-center z-10 flex flex-col items-center w-full px-8 relative">
           
-          {/* 🏷️ TAG & NAME PILL (Click to Open Menu) */}
+          {/* 🏷️ TAG & NAME PILL */}
           <div className="relative mb-3 h-8 flex items-center justify-center z-50">
             {isTagMenuOpen ? (
                <motion.div 
@@ -181,7 +184,6 @@ export default function Timer({
                     <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Select Intent</span>
                     <button onClick={() => setIsTagMenuOpen(false)} className="p-1 hover:bg-white/10 rounded text-white/60"><X size={12}/></button>
                   </div>
-                  {/* TAG GRID */}
                   <div className="grid grid-cols-2 gap-2">
                      {PRESET_TAGS.map(tag => (
                        <button
@@ -194,7 +196,6 @@ export default function Timer({
                        </button>
                      ))}
                   </div>
-                  {/* Custom Name Input */}
                   <div className="flex items-center gap-2 pt-1">
                     <Pencil size={12} className="text-white/40" />
                     <input 
@@ -219,7 +220,7 @@ export default function Timer({
             )}
           </div>
 
-          {/* ⏳ TIME DISPLAY (Click to Edit) */}
+          {/* ⏳ TIME DISPLAY */}
           <div className="h-[88px] flex items-center justify-center">
             {isTimeEditing && !isActive ? (
                <div className="flex items-center justify-center gap-1 text-7xl font-mono font-bold text-white">
@@ -231,10 +232,10 @@ export default function Timer({
                     onChange={(e) => {
                         const val = parseInt(e.target.value);
                         if (val > 0 && val <= 180) setCustomMinutes(val);
-                        else if (!e.target.value) setCustomMinutes(0); // Allow clearing while typing
+                        else if (!e.target.value) setCustomMinutes(0); 
                     }}
                     onBlur={() => {
-                        if (customMinutes === 0) setCustomMinutes(25); // Fallback
+                        if (customMinutes === 0) setCustomMinutes(25); 
                         setIsTimeEditing(false);
                     }}
                     onKeyDown={(e) => e.key === 'Enter' && setIsTimeEditing(false)}
@@ -246,7 +247,6 @@ export default function Timer({
               <div 
                 onClick={() => !isActive && setIsTimeEditing(true)}
                 className={`text-7xl font-bold font-mono tracking-tighter text-white drop-shadow-2xl tabular-nums transition-opacity ${isActive ? 'cursor-default' : 'cursor-pointer hover:opacity-80'}`}
-                title={!isActive ? "Click to Edit Duration" : ""}
               >
                 {formatTime(timeLeft)}
               </div>
@@ -283,7 +283,6 @@ export default function Timer({
           {isActive ? <Pause size={36} fill="black" /> : <Play size={36} fill="white" className="ml-1" />}
         </motion.button>
         
-        {/* LOG EARLY BUTTON */}
         <motion.button 
           whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={handleEarlyFinish} disabled={isActive || totalTime === timeLeft}
           className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 hover:bg-emerald-500/20 transition-all disabled:opacity-0 disabled:pointer-events-none"
@@ -297,8 +296,12 @@ export default function Timer({
       <AnimatePresence>
         {sessionCount > 0 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="absolute -bottom-20 flex items-center gap-2 bg-emerald-500/10 px-5 py-2.5 rounded-full border border-emerald-500/20 shadow-lg backdrop-blur-md">
-             <div className="p-1 bg-emerald-500 rounded-full"><Check size={10} className="text-black" strokeWidth={4} /></div>
-             <span className="text-xs font-bold text-emerald-200 uppercase tracking-wide">Saved: {timeSpentDisplay > 0 ? timeSpentDisplay : initialMinutes}m "{sessionName}"</span>
+             <span className="p-1 bg-emerald-500 rounded-full flex items-center justify-center">
+                <Check size={10} className="text-black" strokeWidth={4} />
+             </span>
+             <span className="text-xs font-bold text-emerald-200 uppercase tracking-wide">
+                Saved: {timeSpentDisplay > 0 ? timeSpentDisplay : initialMinutes}m "{sessionName}"
+             </span>
           </motion.div>
         )}
       </AnimatePresence>

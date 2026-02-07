@@ -52,7 +52,7 @@ export default function StatsBoard({ isOpen, onClose, squadData, myEmail }: Prop
   const [activeTab, setActiveTab] = useState<'squad' | 'personal'>('squad');
 
   // 1️⃣ Safe Destructuring
-  const { squadLevel, squadTotalMinutes, progressToNext, members, history } = squadData || {};
+  const { squadLevel, progressToNext, members, history } = squadData || {};
 
   // 2️⃣ Personal Stats Calculation
   const personalStats = useMemo(() => {
