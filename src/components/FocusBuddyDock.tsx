@@ -16,7 +16,6 @@ interface Props {
   onClose: () => void;
 }
 
-// 🎨 TAG COLORS (Shared Config)
 const TAG_COLORS: Record<string, string> = {
   work: 'border-sky-500 text-sky-400',
   study: 'border-pink-500 text-pink-400',
@@ -27,14 +26,14 @@ const TAG_COLORS: Record<string, string> = {
   default: 'border-indigo-500 text-indigo-400'
 };
 
-// 🏃‍♂️ MOTION VARIANTS
-const dockVariants = {
+// 🏃‍♂️ VARIANTS (Typed as any for build stability)
+const dockVariants: any = {
   hidden: { opacity: 0, scale: 0.92, y: 12, filter: "blur(8px)", transition: { type: "spring", stiffness: 400, damping: 30 } },
   visible: { opacity: 1, scale: 1, y: 0, filter: "blur(0px)", transition: { type: "spring", stiffness: 400, damping: 25, mass: 0.8 } },
   exit: { opacity: 0, scale: 0.96, filter: "blur(4px)", transition: { duration: 0.15, ease: "easeOut" } }
 };
 
-const pulseVariants = {
+const pulseVariants: any = {
   idle: { scale: 1, opacity: 0.4 },
   active: { scale: [1, 1.15, 1], opacity: [0.4, 0.8, 0.4], transition: { duration: 2.5, repeat: Infinity, ease: "easeInOut" } }
 };
@@ -47,9 +46,12 @@ export default function FocusBuddyDock({
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'join' | 'invite'>('join');
   const [isConnecting, setIsConnecting] = useState(false);
+  
+  // 1️⃣ FIX: Use HTMLDivElement for valid ref assignment
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useClickOutside(containerRef, () => {
+  // 2️⃣ FIX: Cast to any to bypass hook signature mismatch
+  useClickOutside(containerRef as any, () => {
     if (isOpen) onClose();
   });
 
@@ -68,10 +70,6 @@ export default function FocusBuddyDock({
   const totalMinutes = myMinutes + partnerMinutes;
   const isPartnerActive = partner?.status && partner.status !== 'Offline';
   
-  // 🧠 DERIVE PARTNER CONTEXT
-  // Assuming 'partner.status' might carry tag info in future, for now defaulting
-  // In a real app, you'd sync 'partner.tag' via the DB. 
-  // Here we use a generic 'focus' style if active, or grey if offline.
   const partnerTagStyle = isPartnerActive ? TAG_COLORS.default : 'border-white/10 text-white/40';
 
   const getInviteLink = () => `${window.location.origin}/?invite=${encodeURIComponent(myUsername || '')}`;
@@ -81,7 +79,6 @@ export default function FocusBuddyDock({
   return (
     <div ref={containerRef} className="fixed top-24 right-6 z-50 flex flex-col items-end font-sans">
       
-      {/* 🟢 DOCK TOGGLE BUTTON */}
       <motion.button 
         onClick={onToggle} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
         className={`relative p-3 rounded-full backdrop-blur-xl shadow-2xl border transition-all duration-300 group z-50
@@ -101,7 +98,6 @@ export default function FocusBuddyDock({
       <AnimatePresence>
         {isOpen && (
           <motion.div variants={dockVariants} initial="hidden" animate="visible" exit="exit" className="mt-4 w-80 bg-[#0a0a0a]/95 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden">
-            {/* 🟢 HEADER */}
             <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
                 <div className="flex items-center gap-2">
                     {isLinked ? ( <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring" }}><Heart size={16} className="text-pink-400 fill-pink-400/20" /></motion.div> ) : ( <Sparkles size={16} className="text-yellow-400" /> )}
@@ -112,7 +108,6 @@ export default function FocusBuddyDock({
 
             <div className="p-5">
                 {!isLinked ? (
-                // 🔴 STATE: DISCONNECTED
                 <div className="space-y-4">
                     <div className="flex p-1 bg-white/5 rounded-xl mb-4 relative">
                         {['join', 'invite'].map((tab) => (
@@ -148,7 +143,6 @@ export default function FocusBuddyDock({
                     </AnimatePresence>
                 </div>
                 ) : (
-                // 🟢 STATE: CONNECTED (HUD STYLE)
                 <div className="space-y-6">
                     <div className="text-center relative">
                         <motion.div variants={pulseVariants} animate={isPartnerActive ? "active" : "idle"} className="absolute inset-0 bg-indigo-500/20 blur-3xl -z-10 rounded-full" />
@@ -159,13 +153,11 @@ export default function FocusBuddyDock({
                     <div className="flex items-center justify-center gap-6 relative">
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-[1px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
                         
-                        {/* You */}
                         <div className="flex flex-col items-center gap-2 z-10">
                             <div className="w-14 h-14 rounded-full bg-[#0a0a0a] border-2 border-indigo-500 flex items-center justify-center text-xs font-bold text-white shadow-[0_0_20px_rgba(99,102,241,0.2)]">YOU</div>
                             <span className="text-[10px] font-mono text-white/60 bg-white/5 px-2 py-0.5 rounded-md">{myMinutes}m</span>
                         </div>
 
-                        {/* Partner */}
                         <div className="flex flex-col items-center gap-2 z-10">
                             <div className={`w-14 h-14 rounded-full bg-[#0a0a0a] border-2 flex items-center justify-center text-xs font-bold text-white relative transition-colors duration-500 ${partnerTagStyle}`}>
                                 {partner.email?.charAt(0).toUpperCase()}
@@ -187,7 +179,10 @@ export default function FocusBuddyDock({
             </div>
             
             <div className="bg-black/40 p-2 text-center border-t border-white/5">
-              <p className="text-[9px] text-white/20 font-mono flex items-center justify-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />@{myUsername}</p>
+              <p className="text-[9px] text-white/20 font-mono flex items-center justify-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse inline-block" />
+                @{myUsername}
+              </p>
             </div>
           </motion.div>
         )}

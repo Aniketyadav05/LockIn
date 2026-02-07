@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  X, Trophy, Zap, Crown, History, TrendingUp, Activity, Award,
+  X, Trophy, Zap, Crown, History, Activity, Award,
   Briefcase, BookOpen, Code2, Dumbbell, Coffee, PenTool, BrainCircuit, User, Users, PieChart
 } from 'lucide-react';
 
@@ -9,7 +9,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   squadData: any;
-  myEmail: string; // 👈 ADDED THIS PROP
+  myEmail: string;
 }
 
 // 🎨 TAG CONFIG
@@ -23,11 +23,11 @@ const TAG_CONFIG: Record<string, { icon: any, color: string, bg: string, label: 
   default: { icon: BrainCircuit, color: 'text-indigo-400', bg: 'bg-indigo-500/10', label: 'Focus' }
 };
 
-// 🏃‍♂️ VARIANTS
-const overlayVariants = { hidden: { opacity: 0 }, visible: { opacity: 1 }, exit: { opacity: 0 } };
-const modalVariants = { hidden: { opacity: 0, scale: 0.95, y: 20 }, visible: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 30 } }, exit: { opacity: 0, scale: 0.95, y: 20 } };
-const contentVariants = { hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0, transition: { staggerChildren: 0.05 } }, exit: { opacity: 0, x: 10 } };
-const itemVariants = { hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } };
+// 🏃‍♂️ VARIANTS (Typed as 'any' to fix build errors)
+const overlayVariants: any = { hidden: { opacity: 0 }, visible: { opacity: 1 }, exit: { opacity: 0 } };
+const modalVariants: any = { hidden: { opacity: 0, scale: 0.95, y: 20 }, visible: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 30 } }, exit: { opacity: 0, scale: 0.95, y: 20 } };
+const contentVariants: any = { hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0, transition: { staggerChildren: 0.05 } }, exit: { opacity: 0, x: 10 } };
+const itemVariants: any = { hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } };
 
 // 🧱 COMPONENTS
 const ProgressBar = ({ progress }: { progress: number }) => (
@@ -54,12 +54,15 @@ export default function StatsBoard({ isOpen, onClose, squadData, myEmail }: Prop
   // 1️⃣ Safe Destructuring
   const { squadLevel, squadTotalMinutes, progressToNext, members, history } = squadData || {};
 
-  // 2️⃣ Personal Stats Calculation (Dependent on myEmail prop)
+  // 2️⃣ Personal Stats Calculation
   const personalStats = useMemo(() => {
-    if (!history || !myEmail) return { totalMins: 0, distribution: [], history: [] };
+    // Safety check for empty history
+    const safeHistory = history || [];
+    
+    if (!myEmail) return { totalMins: 0, distribution: [], history: [] };
 
     // 🔍 Filter history specifically for ME
-    const myHistory = history.filter((s: any) => s.userEmail === myEmail);
+    const myHistory = safeHistory.filter((s: any) => s.userEmail === myEmail);
     const totalMins = myHistory.reduce((acc: number, s: any) => acc + s.duration, 0);
     
     // 📊 Tag Logic
@@ -70,7 +73,7 @@ export default function StatsBoard({ isOpen, onClose, squadData, myEmail }: Prop
     });
 
     const distribution = Object.entries(tagMap)
-      .map(([tag, minutes]) => ({ tag, minutes, pct: (minutes / totalMins) * 100 }))
+      .map(([tag, minutes]) => ({ tag, minutes, pct: (minutes / (totalMins || 1)) * 100 })) // Avoid divide by zero
       .sort((a, b) => b.minutes - a.minutes);
 
     return { totalMins, distribution, history: myHistory };
@@ -126,7 +129,7 @@ export default function StatsBoard({ isOpen, onClose, squadData, myEmail }: Prop
                           </div>
                           <div className="bg-white/5 border border-white/10 rounded-3xl p-6 flex flex-col justify-center items-center text-center">
                             <Zap size={24} className="text-yellow-400 mb-2" />
-                            <span className="text-3xl font-mono font-bold text-white">{history.length}</span>
+                            <span className="text-3xl font-mono font-bold text-white">{history ? history.length : 0}</span>
                             <span className="text-xs text-white/40 font-medium uppercase tracking-wider mt-1">Total Sessions</span>
                           </div>
                       </motion.div>

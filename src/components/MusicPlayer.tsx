@@ -24,8 +24,8 @@ const CATEGORIES: { id: TrackCategory | 'all'; label: string; icon: any; color: 
   { id: 'instrumental', label: 'Piano', icon: Mic2, color: 'bg-pink-500/20 text-pink-300' },
 ];
 
-// 🏃‍♂️ MOTION VARIANTS
-const playerVariants = {
+// 🏃‍♂️ MOTION VARIANTS (Typed as any for deployment stability)
+const playerVariants: any = {
   hidden: { y: 100, opacity: 0 },
   visible: { 
     y: 0, 
@@ -34,7 +34,7 @@ const playerVariants = {
   }
 };
 
-const expandVariants = {
+const expandVariants: any = {
   collapsed: { height: 72 },
   expanded: { 
     height: "auto",
@@ -42,7 +42,7 @@ const expandVariants = {
   }
 };
 
-const equalizerVariants = {
+const equalizerVariants: any = {
   playing: {
     height: [4, 12, 8, 14, 4],
     transition: { repeat: Infinity, duration: 0.5, ease: "linear" }
@@ -53,7 +53,7 @@ const equalizerVariants = {
   }
 };
 
-const discSpin = {
+const discSpin: any = {
   playing: { rotate: 360, transition: { repeat: Infinity, duration: 3, ease: "linear" } },
   paused: { rotate: 0, transition: { type: "spring" } }
 };
@@ -101,13 +101,11 @@ interface Props {
 }
 
 export default function MusicPlayer({ onSongChange, visible = true }: Props) {
-  // 💾 STATE
   const [playlist, setPlaylist] = useLocalStorage<Track[]>('user-playlist', DEFAULT_TRACKS);
   const [volume, setVolume] = useLocalStorage<number>('player-volume', 0.5);
   const [currentTrackUrl, setCurrentTrackUrl] = useState<string>('');
   const [isPlaying, setIsPlaying] = useState(false);
   
-  // 🎨 UI STATE
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeCategory, setActiveCategory] = useState<TrackCategory | 'all'>('all');
   const [viewMode, setViewMode] = useState<'library' | 'add'>('library');
@@ -186,11 +184,8 @@ export default function MusicPlayer({ onSongChange, visible = true }: Props) {
       animate={visible ? "visible" : "hidden"}
       className="fixed bottom-6 left-6 z-[9000] font-sans"
     >
-      {/* 🛑 GLOBAL SCROLL HIDER FOR THIS COMPONENT */}
-      <style>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+      {/* 🛑 GLOBAL SCROLL HIDER LOGIC */}
+      <style dangerouslySetInnerHTML={{ __html: `.no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }` }} />
 
       {sourceType === 'file' && <audio ref={audioRef} src={currentTrack.url} onEnded={() => changeTrack('next')} />}
       <div className={sourceType === 'youtube' ? 'fixed top-[-9999px]' : 'hidden'}>
@@ -293,7 +288,6 @@ export default function MusicPlayer({ onSongChange, visible = true }: Props) {
 
                {viewMode === 'library' && (
                  <>
-                   {/* Categories - Horizontal Scroll */}
                    <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar pb-1">
                       {CATEGORIES.map(cat => (
                         <motion.button 
@@ -307,7 +301,6 @@ export default function MusicPlayer({ onSongChange, visible = true }: Props) {
                       ))}
                    </div>
                    
-                   {/* Track List - Vertical Scroll */}
                    <div className="max-h-56 overflow-y-auto space-y-2 pr-1 no-scrollbar">
                       {filteredPlaylist.map((track, i) => {
                         const isTrackPlaying = currentTrackUrl === track.url;
