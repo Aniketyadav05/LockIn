@@ -128,3 +128,94 @@ export const getSpace = query({
     };
   }
 });
+
+export const logSession = mutation({
+  args: { 
+    email: v.string(), 
+    duration: v.number(), 
+    type: v.string() 
+  },
+  handler: async (ctx, args) => {
+    // A. Save the session record
+    await ctx.db.insert("sessions", {
+      userEmail: args.email,
+      duration: args.duration,
+      type: args.type,
+      timestamp: Date.now(),
+    });
+
+    // B. Update User's Total Stats (Level Up Logic)
+    const user = await ctx.db.query("users").withIndex("by_email", q => q.eq("email", args.email)).first();
+    if (user) {
+      const currentTotal = user.totalMinutes || 0;
+      const newTotal = currentTotal + args.duration;
+      
+      // RPG Logic: Level = Sqrt(TotalMinutes) / 2 (Simple curve)
+      const newLevel = Math.floor(Math.sqrt(newTotal) * 0.5) + 1;
+
+      await ctx.db.patch(user._id, { 
+        totalMinutes: newTotal,
+        level: newLevel
+      });
+    }
+  },
+});
+
+// 2️⃣ GET SQUADRON STATS (The Dashboard Data)
+export const getSquadronStats = query({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    // A. Find Partner
+    const link1 = await ctx.db.query("links").withIndex("by_user1", q => q.eq("user1", args.email)).first();
+    const link2 = await ctx.db.query("links").withIndex("by_user2", q => q.eq("user2", args.email)).first();
+    const link = link1 || link2;
+
+    // B. Determine Squad Members
+    const members = [args.email];
+    if (link) {
+      const partnerEmail = link.user1 === args.email ? link.user2 : link.user1;
+      members.push(partnerEmail);
+    }
+
+    // C. Fetch Sessions for ALL members
+    // (In a real app, we'd limit this to last 30 days for speed, but this is fine for now)
+    let allSessions = [];
+    let squadTotalMinutes = 0;
+    
+    // Fetch stats for each member
+    const memberStats = await Promise.all(members.map(async (m) => {
+       const user = await ctx.db.query("users").withIndex("by_email", q => q.eq("email", m)).first();
+       
+       // Get recent sessions for this user
+       const sessions = await ctx.db.query("sessions")
+         .withIndex("by_user", q => q.eq("userEmail", m))
+         .order("desc")
+         .take(100);
+       
+       const totalMins = user?.totalMinutes || 0;
+       squadTotalMinutes += totalMins;
+       allSessions.push(...sessions);
+
+       return {
+         email: m,
+         name: user?.name || m.split('@')[0],
+         level: user?.level || 1,
+         totalMinutes: totalMins
+       };
+    }));
+
+    // D. Calculate Squad Level
+    // Squad Level is based on COMBINED effort
+    const squadLevel = Math.floor(Math.sqrt(squadTotalMinutes) * 0.5) + 1;
+    const nextLevelMins = Math.pow((squadLevel) / 0.5, 2); // Inverse of level formula
+    const progressToNext = Math.min(100, (squadTotalMinutes / nextLevelMins) * 100);
+
+    return {
+      squadLevel,
+      squadTotalMinutes,
+      progressToNext,
+      members: memberStats,
+      history: allSessions.sort((a,b) => b.timestamp - a.timestamp) // Unified timeline
+    };
+  }
+});

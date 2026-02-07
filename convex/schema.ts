@@ -2,14 +2,26 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-  // 1. User Profiles (New)
   users: defineTable({
     email: v.string(),
     name: v.string(),
     username: v.string(),
+    // We add cumulative stats here for fast lookup
+    totalMinutes: v.optional(v.number()), 
+    level: v.optional(v.number()),
   })
   .index("by_email", ["email"])
-  .index("by_username", ["username"]), // 👈 Ensures Uniqueness
+  .index("by_username", ["username"]),
+
+  // ☁️ NEW: SHARED SESSION HISTORY
+  sessions: defineTable({
+    userEmail: v.string(),
+    duration: v.number(),
+    type: v.string(), // "Focus" or "Stopwatch"
+    timestamp: v.number(),
+  })
+  .index("by_user", ["userEmail"])
+  .index("by_time", ["timestamp"]),
 
   // 2. Live Stats (Existing)
   stats: defineTable({
