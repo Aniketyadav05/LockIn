@@ -7,12 +7,10 @@ interface Props {
 }
 
 // 🏃‍♂️ MOTION PHYSICS (Apple/Linear feel)
-const spring = { type: "spring", stiffness: 400, damping: 30 };
-const softSpring = { type: "spring", stiffness: 200, damping: 25 };
 
 // 🧱 CUSTOM SVG: Precision Analog Ring
 // Renders 60 tick marks and a rotating "second hand" indicator
-const ChronoRing = ({ isActive, elapsed }: { isActive: boolean; elapsed: number }) => {
+const ChronoRing = ({  elapsed }: {  elapsed: number }) => {
   const seconds = (elapsed / 1000) % 60;
   const rotation = seconds * 6; // 6 degrees per second
 
@@ -115,7 +113,7 @@ export default function Stopwatch({ onSessionComplete }: Props) {
       {/* 🟢 MAIN CHRONOMETER DISPLAY */}
       <div className="relative w-72 h-72 md:w-80 md:h-80 flex items-center justify-center mb-12">
         {/* Background Ring & Tick Marks */}
-        <ChronoRing isActive={isActive} elapsed={elapsed} />
+        <ChronoRing  elapsed={elapsed} />
         
         {/* Digital Readout */}
         <div className="relative z-10 flex flex-col items-center">
