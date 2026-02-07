@@ -4,7 +4,8 @@ import { v } from "convex/values";
 export default defineSchema({
   users: defineTable({
     email: v.string(),
-    name: v.string(),
+    name: v.optional(v.string()), // 👈 Add this
+    tag: v.optional(v.string()),
     username: v.string(),
     // We add cumulative stats here for fast lookup
     totalMinutes: v.optional(v.number()), 
